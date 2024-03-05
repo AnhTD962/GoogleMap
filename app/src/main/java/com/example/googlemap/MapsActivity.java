@@ -116,7 +116,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setScrollGesturesEnabled(true);
 
-//        LatLng hanoi = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         LatLng hanoi = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(hanoi, 18f));
         MarkerOptions options = new MarkerOptions().position(hanoi).title("Your location");
