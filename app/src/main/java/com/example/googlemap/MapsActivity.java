@@ -59,13 +59,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public boolean onQueryTextSubmit(String query) {
                 String location = mSearch.getQuery().toString();
                 List<Address> addressList = null;
-                if (location != null) {
-                    Geocoder geocoder = new Geocoder(MapsActivity.this);
-                    try {
-                        addressList = geocoder.getFromLocationName(location, 1);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                Geocoder geocoder = new Geocoder(MapsActivity.this);
+                try {
+                    addressList = geocoder.getFromLocationName(location, 1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (addressList != null && addressList.size() > 0) {
                     Address address = addressList.get(0);
                     LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
                     mMap.addMarker(new MarkerOptions().position(latLng).title(location));
@@ -73,11 +73,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     PolylineOptions polylineOptions = new PolylineOptions();
 
-                    LatLng endLocation = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                    polylineOptions.add(endLocation, latLng);
+                    if (currentLocation != null) {
+                        LatLng endLocation = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        polylineOptions.add(endLocation, latLng);
+                    } else {
+                        LatLng fpt = new LatLng(21.0376472, 105.7915938);
+                        polylineOptions.add(fpt, latLng);
+                    }
                     polylineOptions.color(Color.RED).width(5f);
                     Polyline polyline = mMap.addPolyline(polylineOptions);
-                    return false;
                 }
                 return false;
             }
@@ -115,12 +119,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setScrollGesturesEnabled(true);
-
-        LatLng hanoi = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(hanoi, 18f));
-        MarkerOptions options = new MarkerOptions().position(hanoi).title("Your location");
-        options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-        mMap.addMarker(options);
+        LatLng fpt = new LatLng(21.0376472, 105.7915938);
+        LatLng hanoi;
+        if (currentLocation != null) {
+            hanoi = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(hanoi, 18f));
+            MarkerOptions options = new MarkerOptions().position(hanoi).title("Your location");
+            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+            mMap.addMarker(options);
+        } else {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fpt, 18f));
+            Toast.makeText(this, "Không thể lấy vị trí hiện tại", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
