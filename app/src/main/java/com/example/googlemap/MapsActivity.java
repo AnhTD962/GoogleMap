@@ -5,11 +5,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,8 +24,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -41,6 +45,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Location currentLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
     private final int FINE_PERMISSION_CODE = 1;
+    private SupportStreetViewPanoramaFragment streetViewPanoramaFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +136,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fpt, 18f));
             Toast.makeText(this, "Không thể lấy vị trí hiện tại", Toast.LENGTH_SHORT).show();
         }
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                LatLng markerPosition = marker.getPosition();
+
+                // Create a Street View intent with the marker's position
+                Uri gmmIntentUri = Uri.parse("google.streetview:cbll=" + markerPosition.latitude + "," + markerPosition.longitude);
+                Intent streetViewIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                streetViewIntent.setPackage("com.google.android.apps.maps");
+
+                // Check if Google Maps app is installed on the device before launching the intent
+                if (streetViewIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(streetViewIntent);
+                } else {
+                    Toast.makeText(MapsActivity.this, "Google Maps app is not installed", Toast.LENGTH_SHORT).show();
+                }
+
+                return true;
+            }
+        });
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
